@@ -1,10 +1,28 @@
-// Create our map
-var myMap = L.map("map", {
-  center: [36.7783, -119.4179],
-  zoom: 5
+//Query URL to the GeoJSON of the weekly earthquake data
+var queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geojson";
+
+// Perform a GET request to the query URL
+d3.json(queryUrl, function(data) {
+// Once we get a response, send the data.features object to the createFeatures function
+createFeatures(data.features);
 });
+
+function createFeatures(earthquakeData) { 
+// Define a function we want to run once for each feature in the features array
+// Give each feature a popup describing details of the earthquake
+function onEachFeature(feature, layer) {
+  layer.bindPopup("<h3>" + feature.properties.place +
+    "</h3><hr><p><b>Magnitude:</b> " + feature.properties.mag + "</p>");
+}
+
+var earthquakes = L.geoJSON(earthquakeData, {
+    onEachFeature: onEachFeature
+  });
+
+
+
 // Define satellite map layer
-var streetMap = L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
+var lightMap = L.tileLayer("https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}", {
   attribution: "© <a href='https://www.mapbox.com/about/maps/'>Mapbox</a> © <a href='http://www.openstreetmap.org/copyright'>OpenStreetMap</a> <strong><a href='https://www.mapbox.com/map-feedback/' target='_blank'>Improve this map</a></strong>",
   tileSize: 512,
   maxZoom: 18,
@@ -22,40 +40,25 @@ var darkMap = L.tileLayer("https://api.mapbox.com/styles/v1/mapbox/{id}/tiles/{z
 
   // Define a baseMaps object to hold our base layers
 var baseMaps = {
-    "Street Map": streetMap,
+    "Light Map": lightMap,
     "Dark Map": darkMap
   };
-
-var earthquakes = L.geoJSON(earthquakeData, {
-    onEachFeature: onEachFeature
-  });
 
 var overlayMaps = {
     Earthquakes: earthquakes
   };
 
+// Create our map
+var myMap = L.map("map", {
+  center: [39.0997, -94.5786],
+  zoom: 4.5,
+  layers: [lightMap,darkMap]
+});
+
 L.control.layers(baseMaps, overlayMaps, {
     collapsed: false
   }).addTo(myMap);
 
-//Query URL to the GeoJSON of the weekly earthquake data
-var queryUrl = "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson";
-
-// Perform a GET request to the query URL
-d3.json(queryUrl, function(data) {
-// Once we get a response, send the data.features object to the createFeatures function
-createFeatures(data.features);
-});
-
-function createFeatures(earthquakeData) { 
-// Define a function we want to run once for each feature in the features array
-// Give each feature a popup describing details of the earthquake
-function onEachFeature(feature, layer) {
-  layer.bindPopup("<h3>" + feature.properties.place +
-    "</h3><hr><p><b>Magnitude:</b> " + feature.properties.mag + "</p>");
-}
-
-//Function that assigns a color according to the magnitude of an earthquake
 function getcolor(magnitude){
     switch (true) {
         case magnitude>5:
