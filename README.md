@@ -1,4 +1,4 @@
-# Leaflet Challenge
+# Visualizing Data with Leaflet
 
 Visualizing an earthquake dataset from the United States Geological Survey using Leaflet
 
